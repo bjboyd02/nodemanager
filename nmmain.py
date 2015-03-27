@@ -169,7 +169,7 @@ LOG_AFTER_THIS_MANY_ITERATIONS = 600  # every 10 minutes
 # BUG: what if the data on disk is corrupt?   How do I recover?   What is the
 # "right thing"?   I could run nminit again...   Is this the "right thing"?
 
-version = "0.2-alpha-20140714-1434"
+version = "sensibility-20150327-1338CET"
 
 # Our settings
 configuration = {}
