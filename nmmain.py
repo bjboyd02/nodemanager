@@ -133,6 +133,7 @@ warnings.simplefilter('ignore')
 import sha    # Required for the code safety check
 warnings.resetwarnings()
 
+
 # One problem we need to tackle is should we wait to restart a failed service
 # or should we constantly restart it.   For advertisement and status threads, 
 # I've chosen to wait before restarting...   For worker and accepter, I think
@@ -169,7 +170,7 @@ LOG_AFTER_THIS_MANY_ITERATIONS = 600  # every 10 minutes
 # BUG: what if the data on disk is corrupt?   How do I recover?   What is the
 # "right thing"?   I could run nminit again...   Is this the "right thing"?
 
-version = "sensibility-20150327-1338CET"
+version = "sensibility-20160408-1712CEST"
 
 # Our settings
 configuration = {}
@@ -362,6 +363,11 @@ def start_accepter():
           # the Repy sockettimeout library to protect against malicious 
           # clients that feed us endless data (or no data) to tie up 
           # the connection.
+          #
+          # First, enable Affix and overload various Repy network API calls 
+          # with Affix-enabled calls.
+          global affix_stack_name
+          enable_affix('(CoordinationAffix)(MakeMeHearAffix)(NamingAndResolverAffix,' + affix_stack_name + ')')
           try:
             serversocket = timeout_listenforconnection(bind_ip, possibleport, 10)
           except (AlreadyListeningError, DuplicateTupleError), e:
@@ -571,15 +577,10 @@ def main():
                             + exception_traceback_string)
   
 
-
-  # Enable Affix and overload various Repy network API calls 
-  # with Affix-enabled calls.
   # Use the node's publickey to generate a name for our node.
   mypubkey = rsa_publickey_to_string(configuration['publickey']).replace(" ", "")
+  global affix_stack_name
   affix_stack_name = sha_hexhash(mypubkey)
-
-  enable_affix('(CoordinationAffix)(MakeMeHearAffix)(NamingAndResolverAffix,' + 
-      affix_stack_name + ')')
 
   # get the external IP address...
   myip = None
