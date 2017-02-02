@@ -170,7 +170,7 @@ LOG_AFTER_THIS_MANY_ITERATIONS = 600  # every 10 minutes
 # BUG: what if the data on disk is corrupt?   How do I recover?   What is the
 # "right thing"?   I could run nminit again...   Is this the "right thing"?
 
-version = "sensibility-20160408-1712CEST"
+version = "sensi-jni-20170202-1515CET"
 
 # Our settings
 configuration = {}
@@ -524,15 +524,16 @@ def main():
   # Feature add for #1031: Log information about the system in the nm log...
   servicelogger.log('[INFO]:platform.python_version(): "' + 
     str(platform.python_version())+'"')
-  servicelogger.log('[INFO]:platform.platform(): "' + 
-    str(platform.platform())+'"')
 
   # uname on Android only yields 'Linux', let's be more specific.
   try:
     import android
-    servicelogger.log('[INFO]:platform.uname(): Android / "' + 
+    servicelogger.log('[INFO]:platform.uname(): Android / "' +
       str(platform.uname())+'"')
   except ImportError:
+    # platform.platform() doesn't work on Android at the moment
+    servicelogger.log('[INFO]:platform.platform(): "' + 
+      str(platform.platform())+'"')
     servicelogger.log('[INFO]:platform.uname(): "'+str(platform.uname())+'"')
 
   # I'll grab the necessary information first...
