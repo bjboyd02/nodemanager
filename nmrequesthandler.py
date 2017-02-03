@@ -253,7 +253,7 @@ def ensure_is_correctly_signed(fullrequest, allowedkeys, oldmetadata):
   try:
     time.time_gettime()
   except time.TimeError:
-    time.time_updatetime(34612)
+    time.time_updatetime(55000)
     
 
   # check if request is still valid and has not expired

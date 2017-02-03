@@ -285,7 +285,7 @@ def signeddata_iscurrent(expiretime):
   try:
     currenttime = repytime.time_gettime()
   except repytime.TimeError:
-    repytime.time_updatetime(34612)
+    repytime.time_updatetime(55000)
     currenttime = repytime.time_gettime()
 
   if expiretime > currenttime:
