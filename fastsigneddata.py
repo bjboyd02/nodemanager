@@ -49,8 +49,8 @@ from repyportability import *
 _context = locals()
 add_dy_support(_context)
 
-dy_import_module_symbols("rsa.r2py")
-dy_import_module_symbols("time.r2py")
+rsa = dy_import_module("rsa.r2py")
+repytime = dy_import_module("time.r2py")
 
 
 # The signature for a piece of data is appended to the end and has the format:
@@ -142,7 +142,7 @@ def signeddata_signdata(data, privatekey, publickey, timestamp=None, expiration=
 
 
   # Build up \n!pubkey!timestamp!expire!sequence!dest!signature
-  totaldata = data + "\n!"+rsa_publickey_to_string(publickey)
+  totaldata = data + "\n!"+rsa.rsa_publickey_to_string(publickey)
   totaldata = totaldata+"!"+signeddata_timestamp_to_string(timestamp)
   totaldata = totaldata+"!"+signeddata_expiration_to_string(expiration)
   totaldata = totaldata+"!"+signeddata_sequencenumber_to_string(sequenceno)
@@ -164,14 +164,14 @@ def signeddata_create_signature(data, privatekey, publickey):
   if not privatekey:
     raise ValueError, "Invalid Private Key"
       
-  if not rsa_is_valid_publickey(publickey):
+  if not rsa.rsa_is_valid_publickey(publickey):
     raise ValueError, "Invalid Public Key"
     
   # Time to get the hash...
   hashdata = sha_hash(data)
 
   # ...and sign it
-  signature = rsa_sign(hashdata, privatekey)
+  signature = rsa.rsa_sign(hashdata, privatekey)
   
   return str(signature)
 
@@ -192,14 +192,14 @@ def signeddata_issignedcorrectly(data, publickey=None):
     # error splitting the data means it isn't valid...
     return False
   
-  if publickey != None and rsa_string_to_publickey(rawpublickey) != publickey:
+  if publickey != None and rsa.rsa_string_to_publickey(rawpublickey) != publickey:
     return False
 
-  publickey = rsa_string_to_publickey(rawpublickey)
+  publickey = rsa.rsa_string_to_publickey(rawpublickey)
 
   try: 
     # extract the hash from the signature
-    signedhash = rsa_verify(signature, publickey)
+    signedhash = rsa.rsa_verify(signature, publickey)
   except TypeError, e:
     if 'RSA' not in str(e):
       raise
@@ -283,10 +283,10 @@ def signeddata_iscurrent(expiretime):
 
   # may throw TimeError...
   try:
-    currenttime = time_gettime()
-  except TimeError:
-    time_updatetime(34612)
-    currenttime = time_gettime()
+    currenttime = repytime.time_gettime()
+  except repytime.TimeError:
+    repytime.time_updatetime(34612)
+    currenttime = repytime.time_gettime()
 
   if expiretime > currenttime:
     return True
@@ -363,7 +363,7 @@ def signeddata_split(data):
   originaldata, rawpublickey, rawtimestamp, rawexpiration, rawsequenceno,rawdestination, junksignature = data.rsplit('!',6)
   
   # strip the '\n' off of the original data...
-  return originaldata[:-1], rsa_string_to_publickey(rawpublickey), signeddata_string_to_timestamp(rawtimestamp), signeddata_string_to_expiration(rawexpiration), signeddata_string_to_sequencenumber(rawsequenceno), signeddata_string_to_destination(rawdestination)
+  return originaldata[:-1], rsa.rsa_string_to_publickey(rawpublickey), signeddata_string_to_timestamp(rawtimestamp), signeddata_string_to_expiration(rawexpiration), signeddata_string_to_sequencenumber(rawsequenceno), signeddata_string_to_destination(rawdestination)
 
 
 
@@ -442,7 +442,7 @@ def signeddata_shouldtrust(oldsigneddata, newsigneddata, publickey=None, oldsign
       oldjunk, oldpubkey, oldtime, oldexpire, oldsequence, olddestination = signeddata_split(oldsigneddata)
     else:
       oldrawpublickey, oldrawtimestamp, oldrawexpiration, oldrawsequenceno, oldrawdestination, oldjunksignature = oldsigneddata.rsplit('!',5)
-      oldpubkey, oldtime, oldexpire, oldsequence, olddestination = rsa_string_to_publickey(oldrawpublickey[1:]), signeddata_string_to_timestamp(oldrawtimestamp), signeddata_string_to_expiration(oldrawexpiration), signeddata_string_to_sequencenumber(oldrawsequenceno), signeddata_string_to_destination(oldrawdestination)
+      oldpubkey, oldtime, oldexpire, oldsequence, olddestination = rsa.rsa_string_to_publickey(oldrawpublickey[1:]), signeddata_string_to_timestamp(oldrawtimestamp), signeddata_string_to_expiration(oldrawexpiration), signeddata_string_to_sequencenumber(oldrawsequenceno), signeddata_string_to_destination(oldrawdestination)
     
   
 
