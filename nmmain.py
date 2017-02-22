@@ -271,7 +271,7 @@ def is_accepter_started():
 
 
 # Flags for whether to use Affix
-affix_enabled = True
+affix_enabled = False
 
 
 # Store the original Repy API calls.
