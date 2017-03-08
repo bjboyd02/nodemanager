@@ -739,13 +739,18 @@ def parse_arguments():
                     action='store_true', default=False,
                     help="Run the nodemanager in test mode.")
                     
+  # Add the --use-affix option.
+  parser.add_option('--use-affix', dest='affix_enabled',
+                    action='store_true', default=False,
+                    help="Use Affix for NAT and firewall traversal (experimental).")
+
   # Parse the argumetns.
   options, args = parser.parse_args()
 
   # Set some global variables.
   global FOREGROUND
   global TEST_NM
-
+  global affix_enabled
 
   # Analyze the options
   if options.foreground:
@@ -754,6 +759,9 @@ def parse_arguments():
   if options.test_mode:
     TEST_NM = True
     
+  if options.affix_enabled:
+    affix_enabled = True
+
 
 
 if __name__ == '__main__':
