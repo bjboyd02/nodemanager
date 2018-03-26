@@ -75,7 +75,7 @@ def handle_request(socketobj):
       # let's get the request...
       # BUG: Should prevent endless data / slow retrival attacks
       fullrequest = session.session_recvmessage(socketobj)
-  
+      servicelogger.log('bryan nmrequesthandler: fullrequest') 
     # Armon: Catch a vanilla exception because repy emulated_sockets
     # will raise Exception when the socket has been closed.
     # This is changed from just passing through socket.error,
@@ -248,11 +248,13 @@ def process_API_call(fullrequest):
 
 # Raise a BadRequest exception if it's not correctly signed...
 def ensure_is_correctly_signed(fullrequest, allowedkeys, oldmetadata):
-
+  servicelogger.log('bryan: ensure_is_correctly_signed')
   # check if time_updatetime has been called, if not, call it
   try:
+    servicelogger.log('bryan: trying time.time_gettime()')
     time.time_gettime()
   except time.TimeError:
+    servicelogger.log('bryan: threw time.TimeError')
     time.time_updatetime(34612)
     
 
