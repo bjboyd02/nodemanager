@@ -78,6 +78,8 @@ import nmconnectionmanager
 # can update / read it.
 import nmrequesthandler
 
+import fastsigneddata
+
 import persist
 
 # for getruntime...
@@ -184,6 +186,7 @@ accepter_state = {'lock':createlock(),'started':False}
 # running already.
 FOREGROUND = False
 TEST_NM = False
+LOCAL_MODE = False
 
 # Dict to hold up-to-date nodename and boolean flags to track when to reset
 # advertisement and accepter threads (IP mobility)
@@ -576,6 +579,35 @@ def main():
                             + "seattle crontab entry: " \
                             + exception_traceback_string)
   
+  if LOCAL_MODE:
+    servicelogger.log('[LOCAL]: Operating in local_mode.')
+    nmrequesthandler.LOCAL_MODE = LOCAL_MODE
+    fastsigneddata.LOCAL_MODE = LOCAL_MODE
+
+    if 'local_mode' not in configuration:
+      configuration['local_mode'] = True
+      servicelogger.log('[LOCAL]: Adding local_mode to nodeman.cfg!')
+    else:
+      configuration['local_mode'] = True
+      servicelogger.log('[LOCAL]: Setting local_mode to True in nodeman.cfg')
+    persist.commit_object(configuration, "nodeman.cfg")
+
+    tempVesselDict = persist.restore_object("vesseldict")
+    for vesselname in tempVesselDict.keys()[:]:
+      thisentry = tempVesselDict[vesselname]
+      thisentry['local_mode'] = True
+    persist.commit_object(tempVesselDict, "vesseldict")
+
+  else:
+    configuration['local_mode'] = False
+    servicelogger.log('[LOCAL]: Setting local_mode to false...')
+    persist.commit_object(configuration, "nodeman.cfg")
+
+    tempVesselDict = persist.restore_object("vesseldict")
+    for vesselname in tempVesselDict.keys()[:]:
+      thisentry = tempVesselDict[vesselname]
+      thisentry['local_mode'] = False
+    persist.commit_object(tempVesselDict, "vesseldict")
 
   # Use the node's publickey to generate a name for our node.
   mypubkey = rsa_publickey_to_string(configuration['publickey']).replace(" ", "")
@@ -710,8 +742,10 @@ def main():
     times_through_the_loop += 1
     if times_through_the_loop % LOG_AFTER_THIS_MANY_ITERATIONS == 0:
       servicelogger.log("[INFO]: node manager is alive...")
-      
 
+  configuration['local_mode'] = False
+  servicelogger.log('[LOCAL]: Resetting local_mode to false in nodeman.cfg')
+  persist.commit_object(configuration, "nodeman.cfg")
 
 
 
@@ -738,12 +772,20 @@ def parse_arguments():
                     action='store_true', default=False,
                     help="Run the nodemanager in test mode.")
                     
+  # Add the --local-mode option.
+  parser.add_option('--local-mode', dest='local_mode',
+                    action='store_true', default=False,
+                    help="Run the nodemanager in an " +
+                         "internet-restricted environment. " +
+                         "Will only connect to local nodes.")
+
   # Parse the argumetns.
   options, args = parser.parse_args()
 
   # Set some global variables.
   global FOREGROUND
   global TEST_NM
+  global LOCAL_MODE
 
 
   # Analyze the options
@@ -752,6 +794,9 @@ def parse_arguments():
 
   if options.test_mode:
     TEST_NM = True
+
+  if options.local_mode:
+    LOCAL_MODE = True
     
 
 

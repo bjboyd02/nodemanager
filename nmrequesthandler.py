@@ -46,6 +46,8 @@ import servicelogger
 
 DEBUG_MODE = False
 
+LOCAL_MODE = False
+
 def initialize(myip, publickey, version):
   
   # this allows requests to specify they should only be enacted by us (by 
@@ -75,7 +77,6 @@ def handle_request(socketobj):
       # let's get the request...
       # BUG: Should prevent endless data / slow retrival attacks
       fullrequest = session.session_recvmessage(socketobj)
-      servicelogger.log('bryan nmrequesthandler: fullrequest') 
     # Armon: Catch a vanilla exception because repy emulated_sockets
     # will raise Exception when the socket has been closed.
     # This is changed from just passing through socket.error,
@@ -248,14 +249,17 @@ def process_API_call(fullrequest):
 
 # Raise a BadRequest exception if it's not correctly signed...
 def ensure_is_correctly_signed(fullrequest, allowedkeys, oldmetadata):
-  servicelogger.log('bryan: ensure_is_correctly_signed')
   # check if time_updatetime has been called, if not, call it
   try:
-    servicelogger.log('bryan: trying time.time_gettime()')
-    time.time_gettime()
+    if LOCAL_MODE:
+      time.time_local_gettime()
+    else:
+      time.time_gettime()
   except time.TimeError:
-    servicelogger.log('bryan: threw time.TimeError')
-    time.time_updatetime(34612)
+    if LOCAL_MODE:
+      time.time_local_updatetime(10000)
+    else:
+      time.time_updatetime(34612)
     
 
   # check if request is still valid and has not expired

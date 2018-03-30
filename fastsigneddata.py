@@ -53,6 +53,8 @@ dy_import_module_symbols("rsa.r2py")
 dy_import_module_symbols("time.r2py")
 
 
+LOCAL_MODE = False
+
 # The signature for a piece of data is appended to the end and has the format:
 # \n!publickey!timestamp!expirationtime!sequencedata!destination!signature
 # The signature is actually the sha hash of the data (including the
@@ -283,10 +285,17 @@ def signeddata_iscurrent(expiretime):
 
   # may throw TimeError...
   try:
-    currenttime = time_gettime()
+    if LOCAL_MODE:
+      currenttime = time_local_gettime()
+    else:
+      currenttime = time_gettime()
   except TimeError:
-    time_updatetime(34612)
-    currenttime = time_gettime()
+    if LOCAL_MODE:
+      time_local_updatetime(10000)
+      currenttime = time_local_gettime()
+    else:
+      time_updatetime(34612)
+      currenttime = time_gettime()
 
   if expiretime > currenttime:
     return True

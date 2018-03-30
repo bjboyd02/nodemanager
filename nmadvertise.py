@@ -142,7 +142,20 @@ class advertthread(threading.Thread):
           
           except AdvertiseError, e:
             # If all announce requests failed, assume node has
-            # gone offline, 
+            # gone offline,
+
+            # In local_mode, assume advertise services will be unavailable.
+            for vesselname in self.addict.keys()[:]:
+              try:
+                thisentry = self.addict[vesselname].copy()
+              except KeyError:
+                # the entry must have been removed in the meantime.   Skip it!
+                continue
+
+              if thisentry['local_mode']:
+                servicelogger.log('[LOCAL]: Ignoring AdvertiseErrors.  In Local mode these will fail.')
+                return
+ 
             if str(e) == "None of the advertise services could be contacted":
               self.is_offline = True
               # Log an error message after every 'N' failures
